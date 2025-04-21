@@ -87,14 +87,7 @@ if st.button("🔎 Analyze and Show Summary"):
                 line_width=2))
 
         fig = go.Figure(data=[edge_trace, node_trace],
-                        layout=go.Layout(
-                            title=f"Reflection Tree for {user_name}",
-                            titlefont_size=20,
-                            showlegend=False,
-                            hovermode='closest',
-                            margin=dict(b=20,l=5,r=5,t=40),
-                            xaxis=dict(showgrid=False, zeroline=False),
-                            yaxis=dict(showgrid=False, zeroline=False)))
+                        layout=go.Layout(title=f"Reflection Tree for {user_name}",titlefont_size=20,showlegend=False,hovermode='closest',margin=dict(b=20,l=5,r=5,t=40),xaxis=dict(showgrid=False, zeroline=False),yaxis=dict(showgrid=False, zeroline=False)))
 
         st.plotly_chart(fig)
 
