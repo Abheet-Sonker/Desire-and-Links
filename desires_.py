@@ -2,11 +2,9 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import networkx as nx
-from datetime import datetime
 import os
 
 st.set_page_config(page_title="Desire Reflection App", layout="centered")
-
 st.title("💭 Desire Reflection and Clarity Tool")
 
 # --- 1. User Info ---
@@ -52,20 +50,28 @@ if st.button("🔎 Analyze and Show Summary"):
 
         pos = nx.spring_layout(G, seed=42)
 
-        # Draw edges
-        edge_traces = []
+        # Edge color mapping
         color_map = {"Real": "green", "Spurious": "red", "Unclear": "orange", "gray": "gray"}
+        edge_traces = []
+
+        # Draw edges from main desire to sub-desires with link type
         for edge in G.edges(data=True):
             x0, y0 = pos[edge[0]]
             x1, y1 = pos[edge[1]]
             color = color_map.get(edge[2]['color'], "gray")
+            label = edge[2]['color'] if edge[2]['color'] in color_map else "Other"
+            # Only show legend for the three link types, not for gray outcome links
+            show_legend = label in ["Real", "Spurious", "Unclear"]
             edge_traces.append(
                 go.Scatter(
-                    x=[x0, x1, None],
-                    y=[y0, y1, None],
+                    x=[x0, x1],
+                    y=[y0, y1],
                     line=dict(width=2, color=color),
-                    hoverinfo='none',
-                    mode='lines'
+                    hoverinfo='text',
+                    mode='lines',
+                    name=label if show_legend else None,
+                    text=[f"Link: {label}"],
+                    showlegend=show_legend
                 )
             )
 
@@ -89,7 +95,8 @@ if st.button("🔎 Analyze and Show Summary"):
                 color='skyblue',
                 size=20,
                 line_width=2
-            )
+            ),
+            hoverinfo='text'
         )
 
         # Create figure with all edge traces and node trace
@@ -97,7 +104,7 @@ if st.button("🔎 Analyze and Show Summary"):
             data=edge_traces + [node_trace],
             layout=go.Layout(
                 title=dict(text=f"Reflection Tree for {user_name}", font=dict(size=20)),
-                showlegend=False,
+                showlegend=True,
                 hovermode='closest',
                 margin=dict(b=20, l=5, r=5, t=40),
                 xaxis=dict(showgrid=False, zeroline=False, visible=False),
@@ -127,6 +134,7 @@ if st.button("🔎 Analyze and Show Summary"):
         else:
             updated_df = new_df
 
+        # Save to Excel (requires openpyxl installed)
         updated_df.to_excel(excel_file, index=False)
         st.success("Your reflection has been saved.")
 
