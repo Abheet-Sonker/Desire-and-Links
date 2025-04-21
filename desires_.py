@@ -40,6 +40,7 @@ if st.button("🔎 Analyze and Show Summary"):
     else:
         st.subheader("🧠 Desire Tree Chart")
 
+        # Build the directed graph
         G = nx.DiGraph()
         G.add_node(main_desire)
 
@@ -50,22 +51,25 @@ if st.button("🔎 Analyze and Show Summary"):
             G.add_edge(sd, oc, color='gray')
 
         pos = nx.spring_layout(G, seed=42)
-        edge_x = []
-        edge_y = []
-        edge_colors = []
 
+        # Draw edges
+        edge_traces = []
+        color_map = {"Real": "green", "Spurious": "red", "Unclear": "orange", "gray": "gray"}
         for edge in G.edges(data=True):
             x0, y0 = pos[edge[0]]
             x1, y1 = pos[edge[1]]
-            edge_x += [x0, x1, None]
-            edge_y += [y0, y1, None]
-            edge_colors.append(edge[2]['color'])
+            color = color_map.get(edge[2]['color'], "gray")
+            edge_traces.append(
+                go.Scatter(
+                    x=[x0, x1, None],
+                    y=[y0, y1, None],
+                    line=dict(width=2, color=color),
+                    hoverinfo='none',
+                    mode='lines'
+                )
+            )
 
-        edge_trace = go.Scatter(
-            x=edge_x, y=edge_y,
-            line=dict(width=2, color='gray'),
-            hoverinfo='none', mode='lines')
-
+        # Draw nodes
         node_x = []
         node_y = []
         text = []
@@ -84,10 +88,22 @@ if st.button("🔎 Analyze and Show Summary"):
                 showscale=False,
                 color='skyblue',
                 size=20,
-                line_width=2))
+                line_width=2
+            )
+        )
 
-        fig = go.Figure(data=[edge_trace, node_trace],
-                        layout=go.Layout(title=f"Reflection Tree for {user_name}",titlefont_size=20,showlegend=False,hovermode='closest',margin=dict(b=20,l=5,r=5,t=40),xaxis=dict(showgrid=False, zeroline=False),yaxis=dict(showgrid=False, zeroline=False)))
+        # Create figure with all edge traces and node trace
+        fig = go.Figure(
+            data=edge_traces + [node_trace],
+            layout=go.Layout(
+                title=dict(text=f"Reflection Tree for {user_name}", font=dict(size=20)),
+                showlegend=False,
+                hovermode='closest',
+                margin=dict(b=20, l=5, r=5, t=40),
+                xaxis=dict(showgrid=False, zeroline=False, visible=False),
+                yaxis=dict(showgrid=False, zeroline=False, visible=False)
+            )
+        )
 
         st.plotly_chart(fig)
 
