@@ -3,4 +3,3 @@ pandas
 plotly
 networkx
 datetime
-os
